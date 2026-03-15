@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Telegram Bot Kit — Deploy Your Own AI Chatbot in Minutes</title>
+  <meta name="description" content="Ready-to-deploy AI chatbot for Telegram. Local LLMs via Ollama, zero API costs, Docker one-command setup. Works on any hardware.">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --cyan: #06b6d4;
+      --cyan-dark: #0891b2;
+      --purple: #a855f7;
+      --green: #22c55e;
+      --bg: #030712;
+      --surface: #111827;
+      --border: #1f2937;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .bg-glow {
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 30% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* Nav */
+    nav {
+      padding: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    nav a:hover { color: var(--text); }
+
+    /* Hero */
+    .hero { text-align: center; padding: 100px 0 60px; }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--muted);
+      max-width: 580px;
+      margin: 0 auto 40px;
+    }
+    .cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 1rem; font-weight: 600;
+      text-decoration: none; transition: all 0.2s;
+      border: none; cursor: pointer;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--cyan), var(--cyan-dark)); color: #fff; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(6, 182, 212, 0.3); }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--cyan); }
+
+    /* Stats */
+    .stats-bar { display: flex; justify-content: center; gap: 48px; padding: 40px 0; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: var(--cyan); }
+    .stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    .section-title { font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 16px; letter-spacing: -0.02em; }
+    .section-sub { text-align: center; color: var(--muted); max-width: 600px; margin: 0 auto 48px; }
+
+    /* Features grid */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; transition: border-color 0.2s;
+    }
+    .feature-card:hover { border-color: var(--cyan); }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 16px;
+    }
+    .feature-icon.cyan { background: rgba(6, 182, 212, 0.15); }
+    .feature-icon.purple { background: rgba(168, 85, 247, 0.15); }
+    .feature-icon.green { background: rgba(34, 197, 94, 0.15); }
+    .feature-card h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { color: var(--muted); font-size: 0.95rem; }
+
+    /* How it works */
+    .steps { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; }
+    .step {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; flex: 1; min-width: 220px; max-width: 320px;
+      text-align: center;
+    }
+    .step-number {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: #fff; font-weight: 800; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .step h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    .step p { color: var(--muted); font-size: 0.9rem; }
+
+    /* Code block */
+    .code-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; max-width: 600px; margin: 0 auto;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.9rem; line-height: 1.8; overflow-x: auto;
+    }
+    .code-block .comment { color: #6b7280; }
+    .code-block .cmd { color: var(--cyan); }
+    .code-block .arg { color: var(--green); }
+
+    /* Use cases */
+    .usecases { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .usecase {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px;
+      display: flex; align-items: center; gap: 14px;
+      font-size: 0.95rem;
+    }
+    .usecase-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+    /* Product CTA */
+    .product-cta {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 56px; text-align: center;
+    }
+    .product-cta h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 16px; }
+    .product-cta p { color: var(--muted); max-width: 500px; margin: 0 auto 12px; }
+    .price-tag { font-size: 3.5rem; font-weight: 800; color: var(--green); margin: 24px 0 8px; }
+    .price-tag .currency { font-size: 1.8rem; vertical-align: super; }
+    .price-note { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+
+    /* Models table */
+    .models-table { width: 100%; max-width: 700px; margin: 0 auto; border-collapse: collapse; font-size: 0.9rem; }
+    .models-table th { color: var(--muted); font-weight: 600; text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+    .models-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+    .models-table tr:last-child td { border-bottom: none; }
+    .models-table .highlight { color: var(--cyan); font-weight: 600; }
+
+    /* Footer */
+    footer {
+      padding: 40px 0; border-top: 1px solid var(--border);
+      text-align: center; color: var(--muted); font-size: 0.85rem;
+    }
+    footer a { color: var(--cyan); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .hero { padding: 60px 0 40px; }
+      .stats-bar { gap: 24px; }
+      .product-cta { padding: 32px; }
+      .nav-links { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="container">
+    <nav>
+      <div class="logo">Gregory AI</div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#buy" class="btn btn-primary" style="padding: 10px 24px; font-size: 0.9rem;">Get the Kit</a>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1>Your Own AI Chatbot<br><span>On Telegram. In Minutes.</span></h1>
+      <p>Deploy a private AI assistant on Telegram powered by local LLMs. No OpenAI fees, no cloud dependency. Just docker-compose up.</p>
+      <div class="cta-group">
+        <a href="#buy" class="btn btn-primary">Get the Kit — $9</a>
+        <a href="https://github.com/chillone142-code" class="btn btn-secondary">GitHub</a>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value">$0</div>
+        <div class="stat-label">Monthly API costs</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">1 min</div>
+        <div class="stat-label">To deploy</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Private &amp; local</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">20+</div>
+        <div class="stat-label">Compatible models</div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <section id="features">
+      <h2 class="section-title">Everything Included</h2>
+      <p class="section-sub">A complete AI bot ready to run — not a tutorial, not a template. Working code.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon cyan">&#x1f4ac;</div>
+          <h3>Telegram Integration</h3>
+          <p>Polling mode — works behind NAT, no domain or SSL needed. Just paste your bot token and go.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon purple">&#x1f9e0;</div>
+          <h3>Local LLM via Ollama</h3>
+          <p>Run llama3, mistral, gemma, qwen, or any Ollama model. Your data never leaves your machine.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon green">&#x1f4be;</div>
+          <h3>Conversation Memory</h3>
+          <p>Remembers context per user. Configurable history depth. Each user gets their own conversation thread.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon cyan">&#x1f433;</div>
+          <h3>Docker Ready</h3>
+          <p>docker-compose up and you're live. Includes Ollama service, auto-restart, environment config.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon purple">&#x1f3ad;</div>
+          <h3>Custom Personality</h3>
+          <p>Change the system prompt via env var. Make it a tutor, translator, support agent, or anything else.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon green">&#x1f4ca;</div>
+          <h3>Admin API</h3>
+          <p>FastAPI dashboard with usage stats, message counts, and a send endpoint. Monitor everything at /stats.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how">
+      <h2 class="section-title">3 Steps to Your AI Bot</h2>
+      <p class="section-sub">From zero to a working AI chatbot on Telegram.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Get a Bot Token</h3>
+          <p>Message @BotFather on Telegram, create a bot, copy the token.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Configure</h3>
+          <p>Paste the token in .env, pick your model, set the personality.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Deploy</h3>
+          <p>docker-compose up -d — your bot is live and answering messages.</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 48px;">
+        <div class="code-block">
+<span class="comment"># Clone and configure</span>
+<span class="cmd">cp</span> <span class="arg">.env.example .env</span>
+<span class="cmd">nano</span> <span class="arg">.env</span>  <span class="comment"># paste your bot token</span>
+
+<span class="comment"># Launch everything</span>
+<span class="cmd">docker-compose</span> <span class="arg">up -d</span>
+
+<span class="comment"># Pull a model (first time only)</span>
+<span class="cmd">docker exec</span> ollama <span class="cmd">ollama pull</span> <span class="arg">llama3.2:3b</span>
+
+<span class="comment"># Done! Open Telegram and chat.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compatible models -->
+    <section>
+      <h2 class="section-title">Works With Any Model</h2>
+      <p class="section-sub">Pick the right model for your hardware. From Raspberry Pi to GPU servers.</p>
+
+      <table class="models-table">
+        <tr><th>Model</th><th>Size</th><th>Speed</th><th>Best for</th></tr>
+        <tr><td class="highlight">llama3.2:1b</td><td>1.3 GB</td><td>Fast</td><td>Low-RAM, Raspberry Pi</td></tr>
+        <tr><td class="highlight">llama3.2:3b</td><td>2 GB</td><td>Fast</td><td>Default — most hardware</td></tr>
+        <tr><td class="highlight">mistral:7b</td><td>4.1 GB</td><td>Medium</td><td>Quality responses</td></tr>
+        <tr><td class="highlight">gemma2:9b</td><td>5.4 GB</td><td>Medium</td><td>Multilingual</td></tr>
+        <tr><td class="highlight">qwen2.5:7b</td><td>4.7 GB</td><td>Medium</td><td>Coding tasks</td></tr>
+      </table>
+    </section>
+
+    <!-- Use cases -->
+    <section>
+      <h2 class="section-title">Use It For</h2>
+      <div class="usecases">
+        <div class="usecase"><span class="usecase-icon">&#x1f4bc;</span> Customer support bot</div>
+        <div class="usecase"><span class="usecase-icon">&#x1f393;</span> Study buddy / tutor</div>
+        <div class="usecase"><span class="usecase-icon">&#x1f30d;</span> Language practice partner</div>
+        <div class="usecase"><span class="usecase-icon">&#x1f4dd;</span> Content generation</div>
+        <div class="usecase"><span class="usecase-icon">&#x1f468;&#x200d;&#x1f4bb;</span> Coding assistant</div>
+        <div class="usecase"><span class="usecase-icon">&#x1f4d6;</span> Knowledge base Q&amp;A</div>
+        <div class="usecase"><span class="usecase-icon">&#x1f916;</span> Team assistant</div>
+        <div class="usecase"><span class="usecase-icon">&#x1f6e0;</span> Internal tools bot</div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="buy">
+      <div class="product-cta">
+        <h2>Get the AI Telegram Bot Kit</h2>
+        <p>Complete source code. Docker setup. Documentation. Deploy in minutes, customize forever.</p>
+        <div class="price-tag"><span class="currency">$</span>9</div>
+        <div class="price-note">One-time purchase &middot; Lifetime updates &middot; MIT License</div>
+        <a href="#" class="btn btn-primary" style="font-size: 1.1rem; padding: 16px 40px;">Buy on Gumroad</a>
+        <p style="margin-top: 20px; color: var(--muted); font-size: 0.85rem;">Includes: Python source, Dockerfile, docker-compose, README, .env template</p>
+      </div>
+    </section>
+
+    <footer>
+      <p>Built by <a href="https://github.com/chillone142-code">Gregory AI</a></p>
+    </footer>
+  </div>
+</body>
+</html>
